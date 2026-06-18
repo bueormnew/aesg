@@ -1,0 +1,31 @@
+# Byte-compiled / optimized / dll files
+__pycache__/
+*.pyc
+*.pyd
+*.pyo
+*.egg-info/
+.pytest_cache/
+
+# Distribution / packaging
+.Python
+build/
+dist/
+.env
+.venv
+env/
+venv/
+venv.bak/
+logs/
+*.log
+*.swo
+*~
+.DS_Store
+.mypy_cache/
+.vscode/
+
+# Project-specific ignores
+# Depending on whether benchmarks and docs are essential for the library to function,
+# they might be excluded. For now, I will keep them.
+# benchmarks/
+# docs/
+# USER_GUIDE.md
