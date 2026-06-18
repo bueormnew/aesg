@@ -1,6 +1,6 @@
 # AESG — Adaptive External Semantic Graph
 
-**Version 0.3.0** · [PyPI](https://pypi.org/project/aesg) · [GitHub](https://github.com/newbueorm/aesg) · MIT License
+**Version 0.3.0** · [PyPI](https://pypi.org/project/aesg) · [GitHub](https://github.com/bueormnew/aesg) · MIT License
 
 AESG is a persistent external memory module for PyTorch models. It stores knowledge as a graph of concept nodes backed by memory-mapped files (`mmap`), which means the graph lives on disk and is accessed without full serialization into RAM. Retrieval works through spreading activation rather than nearest-neighbor search, propagating activation energy through the graph's edges.
 
@@ -322,7 +322,7 @@ Insertion throughput is bounded by the Python interpreter loop. The storage and 
 
 ## License
 
-MIT License — Copyright (c) 2024 Bueorm
+MIT License — Copyright (c) 2026 bueormnew
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
@@ -332,4 +332,4 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 ---
 
-*Author: newbueorm · dalusx64@gmail.com*
+*Author: bueormnew · dalusx64@gmail.com*
