@@ -4,15 +4,15 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "aesg"
-version = "0.3.0"
+version = "3.0.0"
 authors = [
   { name="bueormnew", email="dalusx64@gmail.com" },
 ]
-description = "Adaptive External Semantic Graph (AESG) - A persistent, self-organizing external memory layer for neural networks."
+description = "Adaptive External Semantic Graph (AESG) - A persistent, self-organizing external memory layer for neural networks with pre-assembled architectures, professional training, and modular memory packs."
 readme = "README.md"
 requires-python = ">=3.8"
 classifiers = [
-    "Development Status :: 3 - Alpha",
+    "Development Status :: 4 - Beta",
     "Intended Audience :: Science/Research",
     "Intended Audience :: Developers",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
@@ -26,6 +26,17 @@ dependencies = [
     "networkx>=2.5",
 ]
 
+[project.optional-dependencies]
+image = ["torchvision>=0.11.0"]
+tensorboard = ["tensorboard>=2.0"]
+wandb = ["wandb>=0.12"]
+dev = ["pytest>=7.0", "hypothesis>=6.0"]
+all = ["torchvision>=0.11.0", "tensorboard>=2.0", "wandb>=0.12"]
+
 [project.urls]
 "Homepage" = "https://github.com/bueormnew/aesg"
 "Bug Tracker" = "https://github.com/bueormnew/aesg/issues"
+"Documentation" = "https://github.com/bueormnew/aesg#readme"
+
+[tool.setuptools.packages.find]
+include = ["aesg*"]

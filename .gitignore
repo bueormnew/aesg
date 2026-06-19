@@ -1,4 +1,4 @@
-# Byte-compiled / optimized / dll files
+# Byte-compiled / optimized / DLL files
 __pycache__/
 *.pyc
 *.pyd
@@ -15,17 +15,39 @@ dist/
 env/
 venv/
 venv.bak/
-logs/
-*.log
+*.egg
+*.whl
+
+# IDE
+.vscode/
+.idea/
+*.swp
 *.swo
 *~
-.DS_Store
-.mypy_cache/
-.vscode/
 
-# Project-specific ignores
-# Depending on whether benchmarks and docs are essential for the library to function,
-# they might be excluded. For now, I will keep them.
-# benchmarks/
-# docs/
-# USER_GUIDE.md
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Type checking
+.mypy_cache/
+
+# AESG runtime files (generated during training/benchmarks)
+*.aesg
+*.aesglog
+*.aesgpack
+meta.npy
+_bm_tmp/
+benchmark_mem/
+test_mem/
+benchmark_results/
+
+# Kiro spec files (development only)
+.kiro/
+
+# Zip artifact
+aesg.zip
