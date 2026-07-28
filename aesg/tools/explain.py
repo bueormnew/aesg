@@ -42,7 +42,7 @@ class Explainer:
         """
         Rastrea la ruta de navegación desde un input a través de la memoria.
         """
-        context = self.memory.retrieve(input_vector, top_k=1)
+        context = self.memory.retrieve(input_vector)
         if not context.primary_concepts:
             return []
             

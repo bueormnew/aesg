@@ -39,10 +39,33 @@ class AESGConfig:
     region_facilitation_multiplier : float
         Multiplier for intra-region navigation weighting.
 
+    hebbian_learning_rate : float
+        Step size for reinforcing edges between co-activated concepts.
+        In [0.0, 1.0]. Higher values wire associations faster.
+    hebbian_initial_weight : float
+        Weight and confidence assigned to a newly created edge. In [0.0, 1.0].
+        Must be high enough that a fresh edge can actually carry activation
+        past the spreading-activation cutoff, otherwise new links stay inert.
+    hebbian_max_pairs : int
+        Maximum number of top-activated concepts considered for pairwise
+        Hebbian wiring per retrieval. Caps the cost at O(k^2).
+    relevance_reward : float
+        Relevance credited to each concept when it is retrieved. Must exceed
+        the per-consolidation decay for useful concepts to survive pruning.
+    context_carryover_energy : float
+        Initial activation energy given to concepts carried over from the
+        previous retrieval step. In [0.0, 1.0]. Lower values make navigation
+        follow the current query more closely.
+
     consolidation_epoch_interval : int
         Number of epochs between consolidation passes.
     prune_confidence_threshold : float
-        Minimum confidence for an edge to survive pruning. In [0.0, 1.0].
+        Minimum confidence for an edge to conduct activation. In [0.0, 1.0].
+        Edges below this value are ignored during spreading activation.
+    edge_confidence_decay : float
+        Multiplicative decay applied to every edge confidence on each
+        consolidation pass. In [0.0, 1.0]. Counterbalances Hebbian growth so
+        the graph stays sparse.
 
     survival_threshold_relevance : float
         Minimum relevance for a concept to survive evolutionary pressure.
@@ -104,9 +127,17 @@ class AESGConfig:
     spreading_activation_steps: int = 3
     region_facilitation_multiplier: float = 1.5
 
+    # --- Hebbian Learning ---
+    hebbian_learning_rate: float = 0.1
+    hebbian_initial_weight: float = 0.5
+    hebbian_max_pairs: int = 5
+    relevance_reward: float = 0.1
+    context_carryover_energy: float = 0.6
+
     # --- Consolidation ---
     consolidation_epoch_interval: int = 10
     prune_confidence_threshold: float = 0.1
+    edge_confidence_decay: float = 0.99
 
     # --- Evolutionary Pressure ---
     survival_threshold_relevance: float = 0.05

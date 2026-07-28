@@ -48,6 +48,8 @@ class MemoryMode(Enum):
 # Keys:
 #   create_concepts (bool): Whether new sensory/abstract concepts can be created.
 #   consolidation (bool): Whether consolidation (age increment, relevance decay) runs.
+#   reinforcement (bool): Whether Hebbian edge learning and usage crediting run
+#       on every retrieval.
 #   reorganization (bool): Whether topological ops (merge, split, find_semantic_regions) run.
 #   evolutionary_pressure (bool): Whether pruning by relevance/frequency is active.
 #   learning_rate_scale (float): Multiplier applied to the base learning rate.
@@ -55,6 +57,7 @@ MODE_PERMISSIONS: Dict[MemoryMode, Dict] = {
     MemoryMode.TRAIN: {
         "create_concepts": True,
         "consolidation": True,
+        "reinforcement": True,
         "reorganization": True,
         "evolutionary_pressure": True,
         "learning_rate_scale": 1.0,
@@ -62,6 +65,7 @@ MODE_PERMISSIONS: Dict[MemoryMode, Dict] = {
     MemoryMode.FINETUNE: {
         "create_concepts": True,
         "consolidation": True,
+        "reinforcement": True,
         "reorganization": False,
         "evolutionary_pressure": False,
         "learning_rate_scale": 0.1,
@@ -69,6 +73,7 @@ MODE_PERMISSIONS: Dict[MemoryMode, Dict] = {
     MemoryMode.INFERENCE: {
         "create_concepts": False,
         "consolidation": False,
+        "reinforcement": False,
         "reorganization": False,
         "evolutionary_pressure": False,
         "learning_rate_scale": 0.0,
@@ -76,6 +81,7 @@ MODE_PERMISSIONS: Dict[MemoryMode, Dict] = {
     MemoryMode.ONLINE: {
         "create_concepts": True,
         "consolidation": True,
+        "reinforcement": True,
         "reorganization": False,
         "evolutionary_pressure": False,
         "learning_rate_scale": 1.0,

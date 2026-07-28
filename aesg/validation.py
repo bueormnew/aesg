@@ -50,6 +50,7 @@ _POSITIVE_INT_FIELDS = (
     "survival_threshold_frequency",
     "region_detection_interval",
     "batch_size",
+    "hebbian_max_pairs",
 )
 
 # Float fields that must be in [0.0, 1.0]
@@ -59,6 +60,11 @@ _UNIT_FLOAT_FIELDS = (
     "survival_threshold_relevance",
     "merge_similarity_threshold",
     "novelty_explanation_threshold",
+    "hebbian_learning_rate",
+    "hebbian_initial_weight",
+    "relevance_reward",
+    "context_carryover_energy",
+    "edge_confidence_decay",
 )
 
 
