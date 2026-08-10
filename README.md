@@ -151,14 +151,27 @@ When your model needs to retrieve context from memory, AESG doesn't do a simple 
 
 At every forward pass, AESG computes an "explanation score" — how well the current graph can explain the incoming input. If the score is too low (the input is novel), AESG increments a novelty buffer. If the buffer reaches a threshold, a new concept is born. This means the graph only grows when needed, not on every input.
 
+### Hebbian Learning (how edges are formed)
+
+Concepts don't stay isolated. On every retrieval, AESG applies a Hebbian update — *"cells that fire together, wire together"*:
+
+1. **Co-activation**: every pair of concepts retrieved in the same step gets linked bidirectionally.
+2. **Temporal succession**: concepts active in the *previous* step get linked to the ones active now, capturing sequence structure.
+3. **Reinforcement**: if a link already exists, its weight and confidence are pushed towards 1.0 and its `use_count` is incremented.
+
+Each retrieved concept is also credited with `relevance_reward` relevance and a usage tick, which is what protects frequently used knowledge from being pruned.
+
+This is the mechanism that makes spreading activation meaningful — without edges, retrieval would degenerate into a flat nearest-neighbour lookup.
+
 ### Consolidation & Evolutionary Pressure
 
 Periodically, AESG runs a consolidation pass that:
 1. Increments the age of every concept
 2. Decays relevance by 5% (concepts fade if not used)
-3. Prunes concepts that are old, low-relevance, and rarely activated
+3. Decays every edge's confidence by `edge_confidence_decay`
+4. Prunes concepts that are old, low-relevance, and rarely activated
 
-This prevents unbounded growth. The graph evolves: useful concepts survive, unused ones disappear.
+This prevents unbounded growth in both directions. Concepts that keep being retrieved are pushed back up by the Hebbian reward and survive; unused ones fade and disappear. Likewise, associations that keep firing together stay strong, while spurious links fall below `prune_confidence_threshold` and stop conducting activation — which is what keeps the graph sparse instead of collapsing into a fully connected mesh.
 
 ### Persistence
 
@@ -1018,14 +1031,25 @@ This is intentional. Changing config mid-training could corrupt the memory graph
 |-----------|---------|-----------------|
 | `vector_dim` | 256 | Dimension of concept vectors. Must match your model's internal dimension. Range: [1, 8192]. |
 | `max_concepts` | 1,000,000 | Maximum number of concepts in the graph. When exceeded, evolutionary pressure prunes the weakest. |
-| `max_edges_per_node` | 1000 | If a node has more edges than this, it may be split into subgraphs. |
+| `max_edges_per_node` | 1000 | Hard cap on a node's out-degree. Hebbian learning refuses to create new edges beyond this, preventing hub nodes from connecting to everything. |
 
 **Navigation parameters:**
 | Parameter | Default | What it controls |
 |-----------|---------|-----------------|
 | `spreading_activation_steps` | 3 | How many hops activation propagates. More hops = broader context but slower. |
 | `spreading_activation_decay` | 0.8 | How much energy is lost per hop. 0.8 means 80% survives each hop. Range: [0.0, 1.0]. |
-| `region_facilitation_multiplier` | 1.5 | Bonus for traversing within the same semantic region. >1.0 means intra-region paths are preferred. |
+| `region_facilitation_multiplier` | 1.5 | Bonus for traversing within the same semantic region. >1.0 means intra-region paths are preferred. Energy per hop is clamped to 1.0, so activation can never gain strength as it spreads. |
+| `context_carryover_energy` | 0.6 | Initial energy for concepts carried over from the previous step. Lower values make navigation track the current query more closely. Range: [0.0, 1.0]. |
+
+**Hebbian learning parameters:**
+| Parameter | Default | What it controls |
+|-----------|---------|-----------------|
+| `hebbian_learning_rate` | 0.1 | Step size for reinforcing an existing edge between co-activated concepts. Range: [0.0, 1.0]. |
+| `hebbian_initial_weight` | 0.5 | Weight/confidence given to a brand-new edge. Must be high enough for a fresh edge to carry activation past the spreading cutoff. Range: [0.0, 1.0]. |
+| `hebbian_max_pairs` | 5 | How many top-activated concepts are wired pairwise per retrieval. Caps the cost at O(k²). |
+| `relevance_reward` | 0.1 | Relevance credited to each retrieved concept. Must exceed the per-consolidation decay for useful concepts to survive. Range: [0.0, 1.0]. |
+| `edge_confidence_decay` | 0.99 | Multiplicative decay applied to every edge's confidence per consolidation. Counterbalances Hebbian growth to keep the graph sparse. Range: [0.0, 1.0]. |
+| `prune_confidence_threshold` | 0.1 | Edges below this confidence stop conducting activation. Range: [0.0, 1.0]. |
 
 **Novelty parameters:**
 | Parameter | Default | What it controls |

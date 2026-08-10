@@ -175,7 +175,7 @@ class AESGMemory(nn.Module):
                 self.cognitive_engine.create_sensory_concept(q_flat)
             
         # 2. Navegar
-        context, explanation_score = self.navigator.retrieve(q_flat, self.active_state, batch_idx=batch_idx)
+        context, explanation_score, activation = self.navigator.retrieve(q_flat, self.active_state, batch_idx=batch_idx)
         
         # 3. Curiosidad Adaptativa (Novelty Detection)
         if explanation_score < self.config.novelty_explanation_threshold:
@@ -187,12 +187,54 @@ class AESGMemory(nn.Module):
                     self.cognitive_engine.create_sensory_concept(q_flat)
                 self.active_state.novelty_buffer[batch_idx] = 0 # Reset
                 # Forzar recálculo del contexto después del nacimiento
-                context, _ = self.navigator.retrieve(q_flat, self.active_state, batch_idx=batch_idx)
+                context, _, activation = self.navigator.retrieve(q_flat, self.active_state, batch_idx=batch_idx)
         else:
             # Si el grafo lo explica bien, reducimos el buffer (ruido aislado se disipa)
             self.active_state.novelty_buffer[batch_idx] = max(0, self.active_state.novelty_buffer[batch_idx] - 1)
+
+        # 4. Aprendizaje Hebbiano: los conceptos que se activan juntos se conectan,
+        #    y los que se usan acumulan relevancia (lo que los protege de la poda).
+        self._reinforce(activation)
             
         return context
+
+    def _reinforce(self, activation: dict) -> None:
+        """Apply the Hebbian update and usage bookkeeping for one retrieval.
+
+        Strengthens associations between co-activated concepts and credits
+        each activated concept with relevance and usage, so that frequently
+        retrieved knowledge survives evolutionary pressure.
+
+        Gated by the ``reinforcement`` permission, so INFERENCE mode leaves
+        the graph completely untouched.
+
+        Parameters
+        ----------
+        activation : dict
+            Activation info from the navigator, with keys ``activated`` and
+            ``previous``.
+        """
+        if not self._can("reinforcement"):
+            return
+
+        activated = activation.get("activated") or []
+        if not activated:
+            return
+
+        # Credit usage: relevance counteracts the per-consolidation decay and
+        # use_frequency feeds the survival criteria in the cognitive engine.
+        for idx in activated:
+            self.graph.update_relevance(idx, self.config.relevance_reward)
+
+        # Wire together what fired together (only the strongest concepts, to
+        # keep the graph sparse and meaningful).
+        self.graph.hebbian_update(
+            co_activated=activated[: self.config.hebbian_max_pairs],
+            previous=activation.get("previous"),
+            learning_rate=self.config.hebbian_learning_rate,
+            max_edges_per_node=self.config.max_edges_per_node,
+            initial_weight=self.config.hebbian_initial_weight,
+        )
         
     def forward(self, query: torch.Tensor) -> RetrievedContext:
         batch_size = query.size(0) if query.dim() > 1 else 1

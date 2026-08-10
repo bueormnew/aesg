@@ -95,10 +95,27 @@ class CognitiveEngine(nn.Module):
                 pruned_count += 1
                 self.logger.log_event("PRUNE", id1=int(node['id']))
 
+    def decay_edges(self):
+        """Weaken all associations slightly.
+
+        Counterpart to the Hebbian reinforcement applied on retrieval: links
+        that keep being co-activated are pushed back up, while spurious ones
+        fade below ``prune_confidence_threshold`` and stop conducting
+        activation. Without this, Hebbian learning drives the graph towards a
+        fully connected mess where spreading activation carries no information.
+        """
+        if self.storage.edge_count == 0:
+            return
+
+        conf = self.storage.edges['confidence'][:self.storage.edge_count]
+        conf *= self.config.edge_confidence_decay
+
     def consolidate(self):
         active_nodes = np.where(self.storage.nodes['is_active'][:self.storage.node_count] == 1)[0]
         self.storage.nodes['age'][active_nodes] += 1
         self.storage.nodes['relevance'][active_nodes] *= 0.95
+
+        self.decay_edges()
         
         self.apply_evolutionary_pressure()
         self.logger.log_event("CONSOLIDATE", id1=self.epoch, id2=len(active_nodes))
